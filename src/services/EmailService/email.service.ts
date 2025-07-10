@@ -54,7 +54,20 @@ export class EmailService {
 
     }
     async initSendEmail(email: Email, key: string) {
-       return await this.queueService.addEmailJob(email, key);
+        try{
+            await this.queueService.addEmailJob(email, key);
+            return JSON.parse(await this.cacheInstance.get<string>(key) ?? '');
+        } catch(error){
+            if(error instanceof Error){
+                await this.updateStatus(key, 'failed', 'Failed adding to job queue \n' + error.message);
+                this.logger.error(`Error adding email to queue: ${error.message}`, error.stack);
+            }
+        }
+        return {
+            status: 'failed',
+            message: 'Error adding email to queue'
+        }
+
         //send the email to the bullmq queue
     }
     async processEmailJob(job: Job): Promise<void> {

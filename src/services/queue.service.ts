@@ -10,7 +10,6 @@ export class QueueService {
 
     private emailQueue: Queue;
     private worker: Worker;
-   // private readonly redisClient: IORedis;
 
     constructor(
         private readonly logger: CustomLogger,
@@ -19,10 +18,6 @@ export class QueueService {
     ) {
         this.emailServiceInstance = null;
 
-        // this.redisClient = new IORedis(redisUrl, {
-        //     maxRetriesPerRequest: null,
-        //     enableOfflineQueue: true,
-        // });
 
         this.emailQueue = new Queue('emailQueue', {
             connection: redisInstance,

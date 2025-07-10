@@ -1,5 +1,4 @@
 import { CacheProvider } from './cache.provider';
-import {RedisClientType, RedisFunctions, RedisModules, RedisScripts, RespVersions, TypeMapping} from "redis";
 import Redis from "ioredis";
 
 export class RedisCacheProvider implements CacheProvider {

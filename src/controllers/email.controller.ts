@@ -28,7 +28,7 @@ export class EmailController extends BaseController {
             }
 
             const status = await this.emailService.getEmailStatus(idempotencyKey, req.user?.email as string);
-            res.json({ status });
+            res.json(JSON.parse(status || '{}'));
         } catch (error) {
             if (error instanceof Error) {
                 this.logger.error(error.message, error.stack);
