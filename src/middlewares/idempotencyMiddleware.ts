@@ -1,84 +1,82 @@
+
+// if (!['POST', 'PATCH', 'PUT'].includes(req.method)) {
+//     return next();
+// }
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import {CacheProvider} from "../providers/cache.provider";
-import {EmailRequest} from "../types/express";
+import { CacheProvider } from "../providers/cache.provider";
+import { EmailRequest } from "../types/express";
 
-// Generate consistent SHA-256 hash of request body
+// Generate consistent SHA-256 hash of request body to check for the same email with different key ID.
 const hashRequestBody = (body: any): string => {
-    const str = JSON.stringify(body);
+    const str = JSON.stringify({
+        to: body.to,
+        subject: body.subject,
+        text: body.text,
+        html: body.html
+    });
     return crypto.createHash('sha256').update(str).digest('hex');
 };
 
-export const idempotencyMiddleware =  ( cacheInstance: CacheProvider) => {
+export const idempotencyMiddleware = (cacheInstance: CacheProvider) => {
+    return async (req: EmailRequest, res: Response, next: NextFunction) => {
+        if (req.method !== 'POST') return next();
 
-    return async(req: EmailRequest, res: Response, next: NextFunction) => {
-        if (!['POST', 'PATCH', 'PUT'].includes(req.method)) {
-            return next();
-        }
-        const idempotencyKey = req.headers['idempotency-key'] as string;
-        // Skip if no key provided
-        if (!idempotencyKey) return next();
+        // Auto-generate key if not provided
+        const providedKey = req.headers['idempotency-key'] as string;
+        const requestHash = hashRequestBody(req.body);
+        const idempotencyKey = providedKey || `auto_${requestHash}`;
 
-        const redisKey = `idempotency:${idempotencyKey}`;
-        const currentHash = hashRequestBody(req.body);
+        const redisKey = `${idempotencyKey}`;
+        req.idempotencyKey = idempotencyKey; // Attach to request for later use
 
         try {
-            // Check existing key
             const existing = await cacheInstance.get<string>(redisKey);
 
             if (existing) {
                 const data = JSON.parse(existing);
 
-                // If the key already exists for a different request, return error
-                if (data.requestHash !== currentHash) {
+                // Case 1: Different request with same key
+
+                console.log(data);
+                if (data.requestHash !== requestHash) {
                     return res.status(400).json({
-                        error: "Idempotency key used for different request payload"
+                        error: "Idempotency key conflict",
+                        message: "Key already used for different request"
                     });
                 }
+                if(req.user?.email == data.senderEmail) {
+                    // Case 2: Completed request
+                    if (data.status === "completed") {
+                        return res.status(data.statusCode).json(data);
+                    }
 
-                // Return cached response
-                return res.status(data.statusCode).json(data.response);
+                    // Case 3: In-progress request
+                    return res.status(data.statusCode).json({
+                        status: data.status,
+                        //id: data.jobId,
+                        message: data.message
+                    });
+                }
+                return res.status(401).json({error: "Unauthorized", message: "Unauthorized"});
             }
 
-            // Set processing state (10s TTL)
+            // Reserve key for new request
             await cacheInstance.set(
                 redisKey,
                 JSON.stringify({
-                    status: "processing",
-                    requestHash: currentHash,
+                    senderEmail: req.body.senderEmail,
+                    status: "queued",
+                    requestHash,
                     createdAt: new Date().toISOString()
                 }),
-                10  // Short expiry for safety
+                300 // 5-minute reservation
             );
-
-            // Proceed with request
-            const originalSend = res.send.bind(res);
-            let responseBody: any;
-
-            res.send = (body: any) => {
-                responseBody = body;
-                return originalSend(body);
-            };
-
-            res.on("finish", async () => {
-                // Cache final response for 24hr TTL
-                await cacheInstance.set(
-                    redisKey,
-                    JSON.stringify({
-                        status: "completed",
-                        requestHash: currentHash,
-                        response: responseBody,
-                        statusCode: res.statusCode,
-                        createdAt: new Date().toISOString()
-                    }),
-                     3600  // 24 hours
-                );
-            });
 
             next();
         } catch (error) {
             console.error("Idempotency error:", error);
             next();
         }
-    }
+    };
 };

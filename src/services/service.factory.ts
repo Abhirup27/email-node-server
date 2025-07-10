@@ -1,18 +1,35 @@
-import { EmailService} from "./EmailService/email.service";
-import {CustomLogger} from "./logger.service";
-import {CacheProvider} from "../providers/cache.provider";
+import { EmailService } from "./EmailService/email.service";
+import { CustomLogger } from "./logger.service";
+import { CacheProvider } from "../providers/cache.provider";
+import { QueueService } from "./queue.service";
 
 export class ServiceFactory {
+    private queueService: QueueService;
+
     constructor(
         public readonly logger: CustomLogger,
-        private readonly cacheInstance: CacheProvider
-
-    ) {}
-
-    createEmailService(): EmailService {
-        return new EmailService(this.logger, this.cacheInstance);
+        private readonly cacheInstance: CacheProvider,
+        private readonly redisUrl?: string
+    ) {
+        this.queueService = new QueueService(logger, redisUrl);
     }
 
+    createEmailService(): EmailService {
+        const emailServiceInstance = new EmailService(
+            this.logger,
+            this.cacheInstance,
+            this.queueService
+        );
+        this.queueService.setEmailServiceInstance(emailServiceInstance);
+        return emailServiceInstance;
+    }
 
+    getQueueService(): QueueService {
+        return this.queueService;
+    }
 
+    async shutdown() {
+        await this.queueService.close();
+        // Add other cleanup tasks here
+    }
 }

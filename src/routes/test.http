@@ -1,6 +1,16 @@
 ### POST request to example server
 POST http://localhost:3000/api/v1/send-email
+Content-Type: application/json
+idempotency-key: assddsaa232sd213
+
+{
+  "id": "abc123",
+  "senderEmail": "abc@123.com",
+  "recipientEmail" : "xyz@123.com",
+  "subject": "123",
+  "body": "Hello 123"
+}
 
 ###
 
-GET http://localhost:3000/api/v1/
+GET http://localhost:3000/api/v1?idempotencyKey=asdsa

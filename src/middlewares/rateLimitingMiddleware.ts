@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-const rateLimitMiddleware = (maxRequests: number, windowMs: number) => {
+
+export const rateLimitMiddleware = (maxRequests: number, windowSeconds: number) => {
     const requests = new Map<string, { count: number; resetTime: number }>();
 
     return (req: Request, res:Response, next: () => void) => {
@@ -8,7 +9,8 @@ const rateLimitMiddleware = (maxRequests: number, windowMs: number) => {
         const clientData = requests.get(clientId as string);
 
         if (!clientData || now > clientData.resetTime) {
-            requests.set(clientId as string, { count: 1, resetTime: now + windowMs });
+            //reset the counter
+            requests.set(clientId as string, { count: 1, resetTime: now + ( windowSeconds * 1000) });
             next();
         } else if (clientData.count < maxRequests) {
             clientData.count++;

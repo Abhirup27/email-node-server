@@ -5,7 +5,7 @@ export const authenticate = (
     res: Response,
     next: NextFunction
 ) => {
-    // ... auth logic
-    req.user = { id: '123', role: 'admin' };
+    // we will assume that the client and the user is authenticated and the same as in the request body for now
+    req.user = { email:req.body.senderEmail ,role: 'admin' };
     next();
 };

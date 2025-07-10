@@ -6,27 +6,26 @@ declare global {
     namespace Express {
         export interface Request {
             user?: {
-                id: string;
+                email: string;
                 role: string;
             };
-
+            socket?: any;
         }
     }
 }
 
 export interface TGetRequest<Q extends Query> extends Express.Request {
-    user?: User;
     query?: Q;
     //need to add params
     headers: Record<string, unkown>;
     method: 'GET';
 }
 export interface TPostRequest<B, Q extends Query> extends Express.Request {
-    user?: User;
     query?: Q;
     body: B;
     headers: Record<string, unkown>;
     method: 'POST' | 'PATCH' | 'PUT';
+    idempotencyKey?: string;
 }
 
 

@@ -19,9 +19,17 @@ export class RedisCacheProvider implements CacheProvider {
     }
 
     async del(key: string): Promise<void> {
+
         await this.client.del(key);
     }
 
+    async increment(key: string): Promise<number> {
+
+        return await this.client.incr(key);
+    }
+    async expire(key: string, seconds: number): Promise<void> {
+        await this.client.expire(key, seconds);
+    }
     async exists(key: string): Promise<boolean> {
         const result = await this.client.exists(key);
         return result === 1;

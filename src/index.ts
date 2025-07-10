@@ -7,7 +7,7 @@ import {ServiceFactory} from "./services/service.factory";
 import {logger} from "./services/logger.service";
 import {CacheType, createCacheProvider} from "./providers/cache.factory";
 import {idempotencyMiddleware} from "./middlewares/idempotencyMiddleware";
-
+import {rateLimitMiddleware} from "./middlewares/rateLimitingMiddleware";
 async function bootstrap() {
     const app = express();
 
@@ -28,6 +28,7 @@ async function bootstrap() {
         app.use(cookieParser());
         app.use(urlencoded({ extended: false }));
         const idemInstance = idempotencyMiddleware(cacheInstance);
+        const rateLimitingInstance = rateLimitMiddleware(10, 30);
 
         // Create service factory
         const serviceFactory = new ServiceFactory(logger, cacheInstance);
@@ -38,7 +39,7 @@ async function bootstrap() {
          * routes with dependency injection
          * I could have set the idempotency middleware here, but I wanted it to be a router level middleware so it applies to only the post /api/v1/send-email route
          */
-        app.use('/api/v1/', createApiRoutes(serviceFactory, idemInstance));
+        app.use('/api/v1/', rateLimitingInstance, createApiRoutes(serviceFactory, idemInstance));
         //app.use('/api/v1/notes', createNoteRoutes(serviceFactory));
 
         app.listen(config.PORT, () => {

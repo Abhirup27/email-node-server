@@ -22,11 +22,15 @@ export class EmailController extends BaseController {
     }
     async getEmailStatus(req: Request, res: Response) {
         try {
-            console.log(req.user);
-            const email = await this.emailService.getEmailStatus();
-            res.json(email);
+            const idempotencyKey = req.query.idempotencyKey as string;
+            if (!idempotencyKey) {
+                return res.status(400).json({ error: "idempotencyKey is required" });
+            }
+
+            const status = await this.emailService.getEmailStatus(idempotencyKey, req.user?.email as string);
+            res.json({ status });
         } catch (error) {
-            if(error instanceof Error){
+            if (error instanceof Error) {
                 this.logger.error(error.message, error.stack);
             }
             res.status(500).json({ error: "Internal server error" });
@@ -34,9 +38,13 @@ export class EmailController extends BaseController {
     }
     async sendEmail(req: EmailRequest, res: Response) {
         try {
-            console.log(req.user);
-            const email = await this.emailService.sendEmail(req.body);
-            res.json(email);
+            //console.log(req.user);
+            const idempotencyKey = req.headers['idempotency-key'] as string;
+
+            const result = await this.emailService.initSendEmail(req.body, idempotencyKey);
+
+            //res.status(202).json(result);
+            res.json(result);
         } catch(error){
             if(error instanceof Error){
                 this.logger.error(error.message, error.stack);
