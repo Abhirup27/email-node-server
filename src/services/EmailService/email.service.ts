@@ -1,8 +1,11 @@
 import {CustomLogger} from "../logger.service";
+import {CacheProvider} from "../../providers/cache.provider";
+import {Email} from "../../types/email";
 
 export class EmailService {
     constructor(
         protected logger: CustomLogger,
+        protected cacheInstance: CacheProvider,
        // private userRepository: Repository<User>,
     ) {
     }
@@ -15,6 +18,9 @@ export class EmailService {
     async getEmails() {
 
 
+    }
+    async sendEmail(email: Email) {
+        //send the email to the bullmq queue
     }
 }
 

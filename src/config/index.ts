@@ -26,7 +26,12 @@ const ConfigSchema = z.object({
     LOG_TO_FILE: z.coerce.boolean().default(false),
     LOG_LEVELS: z.string()
         .transform((val) => val.split(','))
-        .pipe(z.array(z.enum(validLogLevels)))
+        .pipe(z.array(z.enum(validLogLevels))),
+
+    REDIS_HOST: z.string().default('localhost'),
+    REDIS_PORT: z.coerce.number().default(6379),
+    // REDIS_PASSWORD: z.string().default(''),
+    // REDIS_DB: z.number().default(0),
 });
 
 // Validate and parse configuration

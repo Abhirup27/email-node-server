@@ -4,8 +4,9 @@ import cookieParser from "cookie-parser";
 import config from './config';
 import {createApiRoutes} from "./routes/api.routes";
 import {ServiceFactory} from "./services/service.factory";
-import {logger } from "./services/logger.service";
-
+import {logger} from "./services/logger.service";
+import {CacheType, createCacheProvider} from "./providers/cache.factory";
+import {idempotencyMiddleware} from "./middlewares/idempotencyMiddleware";
 
 async function bootstrap() {
     const app = express();
@@ -13,19 +14,31 @@ async function bootstrap() {
     try {
         process.on('SIGINT', () => { gracefulShutdown('SIGINT') });
         process.on('SIGTERM', () =>  { gracefulShutdown('SIGTERM') });
-        logger.log("Initializing Services");
-        // Create service factory
-        const serviceFactory = new ServiceFactory(logger);
 
-        logger.log("Initializing middlewares");
+        logger.log("Initializing Services and Middlewares");
+
+        const cacheInstance = await createCacheProvider(CacheType.REDIS);
+        await cacheInstance.set('test', 'test', 10);
+        cacheInstance.get('test').then(res => {
+            console.log(res);
+        }
+        )
         // Middleware
         app.use(express.json());
         app.use(cookieParser());
         app.use(urlencoded({ extended: false }));
+        const idemInstance = idempotencyMiddleware(cacheInstance);
+
+        // Create service factory
+        const serviceFactory = new ServiceFactory(logger, cacheInstance);
 
         logger.log("Initializing routes");
-        // Routes with dependency injection
-        app.use('/api/v1/', createApiRoutes(serviceFactory));
+
+        /**
+         * routes with dependency injection
+         * I could have set the idempotency middleware here, but I wanted it to be a router level middleware so it applies to only the post /api/v1/send-email route
+         */
+        app.use('/api/v1/', createApiRoutes(serviceFactory, idemInstance));
         //app.use('/api/v1/notes', createNoteRoutes(serviceFactory));
 
         app.listen(config.PORT, () => {
@@ -42,7 +55,6 @@ async function bootstrap() {
         });
 
     } catch (error: any) {
-        console.error(error);
         logger.error("Initialization error", error.stack);
         process.exit(1);
     }
