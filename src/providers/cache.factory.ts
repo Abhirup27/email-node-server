@@ -1,31 +1,43 @@
 import { CacheProvider } from './cache.provider';
 import { RedisCacheProvider } from './redisCache.provider';
 import { MemoryCacheProvider } from './memoryCache.provider';
-import { createClient } from 'redis';
+
 import config from "../config";
+import Redis from "ioredis";
 
 export enum CacheType {
     REDIS = 'redis',
     MEMORY = 'memory'
 }
-
+export function createCacheProvider(type: CacheType.REDIS): Promise<{
+    cacheProvider: RedisCacheProvider;
+    redisClient: Redis;
+}>;
+export function createCacheProvider(type: CacheType.MEMORY): Promise<{
+    cacheProvider: MemoryCacheProvider;
+}>;
 export async function createCacheProvider(
     type: CacheType,
-   // redisConfig?: { url: string }
-): Promise<CacheProvider> {
+): Promise<{ cacheProvider: CacheProvider; redisClient?: Redis }> {
     switch (type) {
-        case CacheType.REDIS:
-          //  if (!redisConfig) throw new Error('Redis config required');
-
-            const redisClient = await createClient({socket: {host: config.REDIS_HOST, port: config.REDIS_PORT}, })
-                                                                .on('error', (err) => {throw err;})
-                                                                .connect();
-
-           // const client = new Redis(redisConfig.url);
-            return new RedisCacheProvider(redisClient);
-        case CacheType.MEMORY:
-            return new MemoryCacheProvider();
-        default:
-            throw new Error(`Invalid cache type: ${type}`);
+        case CacheType.REDIS: {
+            try {
+                const redisClient = new Redis(config.REDIS_PORT, config.REDIS_HOST, {
+                    maxRetriesPerRequest: null
+                });
+                const cacheProvider = new RedisCacheProvider(redisClient);
+                return { cacheProvider, redisClient };
+            } catch (e) {
+                throw e;
+            }
+        }
+        case CacheType.MEMORY: {
+            const cacheProvider = new MemoryCacheProvider();
+            return { cacheProvider };
+        }
+        default: {
+            const exhaustiveCheck: never = type;
+            throw new Error(`Invalid cache type: ${exhaustiveCheck}`);
+        }
     }
 }

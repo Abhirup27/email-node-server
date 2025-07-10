@@ -9,13 +9,11 @@
     "dev": "NODE_ENV=development ts-node-dev --respawn src/index.ts"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "bullmq": "^5.56.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "redis": "^5.6.0",
-    "zod": "^3.25.67"
+    "ioredis": "^5.6.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

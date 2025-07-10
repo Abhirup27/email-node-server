@@ -1,8 +1,9 @@
 import { CacheProvider } from './cache.provider';
 import {RedisClientType, RedisFunctions, RedisModules, RedisScripts, RespVersions, TypeMapping} from "redis";
+import Redis from "ioredis";
 
 export class RedisCacheProvider implements CacheProvider {
-    constructor(private readonly client: RedisClientType<RedisModules, RedisFunctions, RedisScripts, RespVersions, TypeMapping>) {}
+    constructor(private readonly client: Redis) {}
 
     async get<T>(key: string): Promise<T | null> {
         const data = await this.client.get(key);
@@ -12,7 +13,7 @@ export class RedisCacheProvider implements CacheProvider {
     async set<T>(key: string, value: T, ttl?: number): Promise<void> {
         const stringValue = JSON.stringify(value);
         if (ttl) {
-            await this.client.setEx(key, ttl, stringValue);
+            await this.client.setex(key, ttl, stringValue);
         } else {
             await this.client.set(key, stringValue);
         }
@@ -36,7 +37,7 @@ export class RedisCacheProvider implements CacheProvider {
     }
 
     // For transaction support
-    async withConnection<T>(fn: (client: RedisClientType<RedisModules, RedisFunctions, RedisScripts, RespVersions, TypeMapping>) => Promise<T>): Promise<T> {
+    async withConnection<T>(fn: (client: Redis) => Promise<T>): Promise<T> {
         return fn(this.client);
     }
 }

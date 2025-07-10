@@ -17,21 +17,18 @@ async function bootstrap() {
 
         logger.log("Initializing Services and Middlewares");
 
-        const cacheInstance = await createCacheProvider(CacheType.REDIS);
-        await cacheInstance.set('test', 'test', 10);
-        cacheInstance.get('test').then(res => {
-            console.log(res);
-        }
-        )
+        const redis = await createCacheProvider(CacheType.REDIS);
+        const cacheInstance = redis.cacheProvider;
+
         // Middleware
         app.use(express.json());
         app.use(cookieParser());
         app.use(urlencoded({ extended: false }));
-        const idemInstance = idempotencyMiddleware(cacheInstance);
+        const idemInstance = idempotencyMiddleware(redis.cacheProvider);
         const rateLimitingInstance = rateLimitMiddleware(10, 30);
 
         // Create service factory
-        const serviceFactory = new ServiceFactory(logger, cacheInstance);
+        const serviceFactory = new ServiceFactory(logger, redis.cacheProvider, redis.redisClient);
 
         logger.log("Initializing routes");
 

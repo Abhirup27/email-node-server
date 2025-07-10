@@ -1,7 +1,7 @@
 ### POST request to example server
 POST http://localhost:3000/api/v1/send-email
 Content-Type: application/json
-idempotency-key: assddsaa232sd213
+idempotency-key: 128969a22d22s132
 
 {
   "id": "abc123",
@@ -13,4 +13,4 @@ idempotency-key: assddsaa232sd213
 
 ###
 
-GET http://localhost:3000/api/v1?idempotencyKey=asdsa
+GET http://localhost:3000/api/v1?idempotencyKey=a2ssdds212313a12a232sd213
