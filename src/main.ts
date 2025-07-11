@@ -22,7 +22,7 @@ async function bootstrap() {
 
         logger.log("Initializing Services and Middlewares");
 
-        const cache: {cacheProvider: CacheProvider , redisClient?: Redis} = await createCacheProvider(CacheType.MEMORY);
+        const cache: {cacheProvider: CacheProvider , redisClient?: Redis} = await createCacheProvider(CacheType.REDIS);
         const cacheInstance = cache.cacheProvider;
 
         // Middleware

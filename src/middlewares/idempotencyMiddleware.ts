@@ -35,6 +35,7 @@ export const idempotencyMiddleware = (cacheInstance: CacheProvider) => {
 
             if (existing) {
                 const data = JSON.parse(existing);
+                data.duplicate = true;
 
                 // Case 1: Different request with same key
 
@@ -47,7 +48,7 @@ export const idempotencyMiddleware = (cacheInstance: CacheProvider) => {
                 }
                 if(req.user?.email == data.senderEmail) {
                     // Case 2: Completed request
-                    if (data.status === "completed") {
+                    if (data.status === "sent") {
                         return res.status(data.statusCode).json(data);
                     }
 

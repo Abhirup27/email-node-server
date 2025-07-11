@@ -2,8 +2,9 @@ import { EmailService } from "./EmailService/email.service";
 import { CustomLogger } from "./logger.service";
 import { CacheProvider } from "../providers/cache.provider";
 import { QueueService } from "./QueueService/queue.service";
-import Redis from "ioredis";
+//import Redis from "ioredis";
 import {RedisCacheProvider} from "../providers/redisCache.provider";
+const Redis = require('ioredis');
 
 export class ServiceFactory {
     private queueService: QueueService;
@@ -11,7 +12,7 @@ export class ServiceFactory {
     constructor(
         public readonly logger: CustomLogger,
         private readonly cacheInstance: CacheProvider,
-        private readonly redisInstance?: Redis,
+        private readonly redisInstance?:  typeof Redis | null,
 
 
     ) {

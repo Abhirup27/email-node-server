@@ -34,10 +34,10 @@ export class EmailController extends BaseController {
     // If the email is not found, it returns a 404.
     // If the email is found, it returns a 200 with the status.
     // */
-    async getEmailStatus(req: TGetRequest<{idempotencyKey: string}>, res: Response) {
+    async getEmailStatus(req: TGetRequest<{key: string}>, res: Response) {
         try {
             this.logger.log(req.params.key);
-            const idempotencyKey = req.params.id as string ?? req.params.key;
+            const idempotencyKey = req.params.key as string ?? req.query.key;
             if (!idempotencyKey) {
                 return res.status(400).json({ error: "idempotencyKey is required" });
             }

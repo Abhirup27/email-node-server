@@ -18,12 +18,18 @@ export class EmailService {
 
         protected logger: CustomLogger,
         protected cacheInstance: CacheProvider,
-        private queueService: QueueService
+        private queueService: QueueService,
+        testProviders: MailSenderProvider[] = [],
     ) {
-        this.providers = [
-             createMailProvider(MailProvider.Provider1),
-            createMailProvider(MailProvider.Provider2),
-        ]
+        /**
+         * passed from the tests
+         * */
+        if(!testProviders.length) {
+            this.providers = [createMailProvider(MailProvider.Provider1),
+                createMailProvider(MailProvider.Provider2)];
+        }else {
+            this.providers = testProviders.map(provider => provider);
+        }
         this.circuitBreakers = new Map();
         this.rateLimiters = new Map();
         this.providers.forEach(provider => {
@@ -168,6 +174,7 @@ export class EmailService {
                 break;
         }
     }
+
 }
 
 // Export a singleton instance

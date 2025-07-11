@@ -9,7 +9,10 @@ declare global {
                 email: string;
                 role: string;
             };
-            socket?: any;
+            socket?: Express.Socket;
+        }
+        export interface Request {
+            status?: number;
         }
     }
 }
