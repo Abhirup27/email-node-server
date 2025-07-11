@@ -7,7 +7,7 @@ import Redis from "ioredis";
 
 export enum CacheType {
     REDIS = 'redis',
-    MEMORY = 'memory'
+    MEMORY = 'memory',
 }
 export function createCacheProvider(type: CacheType.REDIS): Promise<{
     cacheProvider: RedisCacheProvider;
@@ -16,6 +16,7 @@ export function createCacheProvider(type: CacheType.REDIS): Promise<{
 export function createCacheProvider(type: CacheType.MEMORY): Promise<{
     cacheProvider: MemoryCacheProvider;
 }>;
+
 export async function createCacheProvider(
     type: CacheType,
 ): Promise<{ cacheProvider: CacheProvider; redisClient?: Redis }> {
@@ -36,8 +37,8 @@ export async function createCacheProvider(
             return { cacheProvider };
         }
         default: {
-            const exhaustiveCheck: never = type;
-            throw new Error(`Invalid cache type: ${exhaustiveCheck}`);
+           // const exhaustiveCheck: CacheType.INVALID = type;
+            throw new Error(`Invalid cache type: ${type}`);
         }
     }
 }
