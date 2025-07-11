@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "install:basic": "npm install --no-optional",
-    "install:all": "npm install",
+    "install:all": "npm install && git checkout main",
     "build": "tsc",
     "start:dev": "NODE_ENV=development node dist/main.js",
     "start:prod": "NODE_ENV=production node dist/main.js",

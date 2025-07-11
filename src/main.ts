@@ -8,7 +8,6 @@ import {logger} from "./services/logger.service";
 import {CacheType, createCacheProvider} from "./providers/cache.factory";
 import {idempotencyMiddleware} from "./middlewares/idempotencyMiddleware";
 import {rateLimitMiddleware} from "./middlewares/rateLimitingMiddleware";
-import {RedisCacheProvider} from "./providers/redisCache.provider";
 import {CacheProvider} from "./providers/cache.provider";
 import Redis from "ioredis";
 
@@ -22,7 +21,7 @@ async function bootstrap() {
 
         logger.log("Initializing Services and Middlewares");
 
-        const cache: {cacheProvider: CacheProvider , redisClient?: Redis} = await createCacheProvider(CacheType.REDIS);
+        const cache: {cacheProvider: CacheProvider , redisClient?: Redis} = await createCacheProvider(CacheType.MEMORY);
         const cacheInstance = cache.cacheProvider;
 
         // Middleware
@@ -33,7 +32,7 @@ async function bootstrap() {
         const rateLimitingInstance = rateLimitMiddleware(10, 30);
 
         // Create service factory
-        const serviceFactory = new ServiceFactory(logger, cache.cacheProvider, cache.cacheProvider instanceof RedisCacheProvider ? cache.redisClient : undefined);
+        const serviceFactory = new ServiceFactory(logger, cache.cacheProvider);
 
         logger.log("Initializing routes");
 
