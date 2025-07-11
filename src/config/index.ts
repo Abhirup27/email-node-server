@@ -10,10 +10,11 @@ const envFiles = [
     '.env'
 ];
 
-envFiles.forEach(file => {
-    dotenv.config({ path: path.resolve(process.cwd(), file) });
-});
-
+if(NODE_ENV !== 'production') {
+    envFiles.forEach(file => {
+        dotenv.config({path: path.resolve(process.cwd(), file)});
+    });
+}
 
 type LogLevel = 'debug' | 'error' | 'warn' | 'log' | 'info';
 
