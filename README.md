@@ -1,30 +1,36 @@
 # email-node-server
+
 My aws instance:
 
-
-There are only 3 main dependencies:
+There are 5 dependencies:
 ```json
 "dependencies": {
 "cookie-parser": "^1.4.7",
 "dotenv": "^16.5.0",
-"express": "^5.1.0"
+"express": "^5.1.0",
+"bullmq": "^5.56.2",
+"ioredis": "^5.6.1"
 },
 ```
-The other two, bullmq and ioredis are optional. That is what I am using in my aws instance.
-If you want to run and test using only the required dependencies, run:
-
+There is also a in memory cache and a simple FIFO queue providers which do not depend on redis and bullmq
+install the dependencies by running:
+        
 ```shell
-npm run install:basic
-OR
-npm install --no-optional
-```
-If you want to also test the redis and bullmq implementation, install:
-```shell
-npm run install:all
-OR
 npm install
 ```
-In your env file:
 
+In the .env.development file:
 
-I have provided two routes currently, 1 GET route /
+```
+PORT=3000
+RATE_LIMITING_WINDOW=10
+LOGGING=true
+LOG_TO_FILE=boolean
+LOG_LEVELS=debug,log,error,warn
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+I have provided two routes , 1 GET route /api/v1/:key or /api/v1?key=<key> to fetch the current status.
+
+The other one is /api/v1/send-email. You can see the required request body's contents in ./src/routes/test.http  
+
