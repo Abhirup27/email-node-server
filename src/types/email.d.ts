@@ -5,7 +5,7 @@ export interface Email {
     recipientEmail: string;
     subject: string;
     body: string;
-    status: 'sent' | 'failed' | 'queued' | 'processing';
+    //status: 'sent' | 'failed' | 'queued' | 'processing';
 }
 
 export interface User {

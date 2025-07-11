@@ -1,5 +1,5 @@
 import {MailSenderProvider} from "./mailSender.provider";
-import {Email} from "../../../types/email";
+import {Email} from "../../../../types/email";
 
 export class MailSenderB implements MailSenderProvider{
     name = 'MockProviderB';

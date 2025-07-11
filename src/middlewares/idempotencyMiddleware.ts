@@ -11,7 +11,7 @@ import { EmailRequest } from "../types/express";
 const hashRequestBody = (body: any): string => {
     const str = JSON.stringify({
         to: body.to,
-        subject: body.subject,
+        subject: body.subject, 
         text: body.text,
         html: body.html
     });

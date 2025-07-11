@@ -1,5 +1,5 @@
-import {MailSenderA} from "./mailSenderA.provider";
-import {MailSenderB} from "./mailSenderB.provider";
+import {MailSenderA} from "./MailSender/mailSenderA.provider";
+import {MailSenderB} from "./MailSender/mailSenderB.provider";
 
 export enum MailProvider {
     Provider1 = 'ProviderA',

@@ -1,9 +1,9 @@
 import {CustomLogger} from "../logger.service";
 import {CacheProvider} from "../../providers/cache.provider";
 import {Email} from "../../types/email";
-import {QueueService} from "../queue.service";
+import {QueueService} from "../QueueService/queue.service";
 import {CircuitBreaker} from "./circuit-breaker";
-import {MailSenderProvider} from "./providers/mailSender.provider";
+import {MailSenderProvider} from "./providers/MailSender/mailSender.provider";
 import {createMailProvider, MailProvider} from "./providers/mailSender.factory";
 import {RateLimiter} from "./rate-limiter";
 import {Job} from "bullmq";
@@ -30,7 +30,7 @@ export class EmailService {
             this.circuitBreakers.set(provider.name, new CircuitBreaker());
             this.rateLimiters.set(
                 provider.name,
-                new RateLimiter(cacheInstance, 10, 60) // 10 req/min
+                new RateLimiter(cacheInstance, 10, 15)
             );
         });
     }
@@ -55,6 +55,7 @@ export class EmailService {
     }
     async initSendEmail(email: Email, key: string) {
         try{
+            //send the email to the bullmq queue
             await this.queueService.addEmailJob(email, key);
             return JSON.parse(await this.cacheInstance.get<string>(key) ?? '');
         } catch(error){
@@ -68,9 +69,8 @@ export class EmailService {
             message: 'Error adding email to queue'
         }
 
-        //send the email to the bullmq queue
     }
-    async processEmailJob(job: Job): Promise<void> {
+    async processEmailJob(job: Job | { id: string, data: object, attemptsMade: number}): Promise<void> {
         const email: Email = job.data;
         const idempotencyKey = job.id!;
 

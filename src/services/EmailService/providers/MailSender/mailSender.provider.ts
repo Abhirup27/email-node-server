@@ -1,4 +1,4 @@
-import {Email} from "../../../types/email";
+import {Email} from "../../../../types/email";
 
 
 export interface MailSenderProvider {

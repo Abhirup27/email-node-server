@@ -15,7 +15,8 @@ declare global {
 }
 
 export interface TGetRequest<Q extends Query> extends Express.Request {
-    query?: Q;
+    query: Q;
+    params: core.ParamsDictionary;
     //need to add params
     headers: Record<string, unkown>;
     method: 'GET';
